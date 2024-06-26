@@ -28,7 +28,7 @@ jobs:
       run: |
         mkdir dockerfile
         cd dockerfile
-        docker build -t Dockerfile .
+        docker build -t dockerfile .
       
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
