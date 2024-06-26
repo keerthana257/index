@@ -26,7 +26,7 @@ jobs:
 
     - name: Build the Docker image
       run: docker build -t custom-nginx .
-      shell: /bin/bash
+      
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -38,19 +38,19 @@ jobs:
         IMAGE_TAG=latest
         ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         docker tag custom-nginx:$IMAGE_TAG $ECR_URI:$IMAGE_TAG
-      shell: /bin/bash
+     
 
     - name: Push the Docker image to ECR
       run: |
         IMAGE_TAG=latest
         ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         docker push $ECR_URI:$IMAGE_TAG
-      shell: /bin/bash
+     
 
     - name: Run Docker container
       run: |
         ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         IMAGE_TAG=latest
         docker run -d -p 80:80 $ECR_URI:$IMAGE_TAG
-      shell: /bin/bash
+      
 
