@@ -28,7 +28,7 @@ jobs:
       run: |
         mkdir dockerfile
         cd dockerfile
-        docker build -t dockerfile .
+        docker build -t nginx1 .
       
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
