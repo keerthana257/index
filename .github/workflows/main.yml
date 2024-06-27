@@ -34,6 +34,15 @@ jobs:
         echo "Checking contents of root directory"
         ls -la
 
+    - name: Verify Dockerfile presence
+      run: |
+        if [ ! -f external-repo/Dockerfile ]; then
+          echo "Dockerfile not found in external-repo directory"
+          exit 1
+        else
+          echo "Dockerfile found"
+        fi
+
     - name: Build the Docker image
       run: |
         cd external-repo
