@@ -32,7 +32,5 @@ jobs:
 
       - name: Push Docker image to ECR
         run: |
-          IMAGE_TAG=latest
           REPOSITORY_URI=${{ secrets.ECR_REPOSITORY_URI }}
-          docker push $REPOSITORY_URI:$IMAGE_TAG
-
+          docker push $REPOSITORY_URI:latest
