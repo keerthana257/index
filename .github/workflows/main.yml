@@ -24,12 +24,13 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
+    - name: Clone external repository
+      run: git clone https://github.com/keerthana257/index.git external-repo
+
     - name: Build the Docker image
       run: |
-        mkdir dockerfile
-        cd dockerfile
-        docker build -t nginx1 .
-      
+        cd external-repo
+        docker build -t custom-nginx .
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -41,19 +42,15 @@ jobs:
         IMAGE_TAG=latest
         ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         docker tag custom-nginx:$IMAGE_TAG $ECR_URI:$IMAGE_TAG
-     
 
     - name: Push the Docker image to ECR
       run: |
         IMAGE_TAG=latest
         ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         docker push $ECR_URI:$IMAGE_TAG
-     
 
     - name: Run Docker container
       run: |
         ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         IMAGE_TAG=latest
         docker run -d -p 80:80 $ECR_URI:$IMAGE_TAG
-      
-
