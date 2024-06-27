@@ -1,4 +1,4 @@
-name: Build, Push, and Run Docker Container
+name: Build and Push Docker Image to ECR
 
 on:
   push:
@@ -6,69 +6,35 @@ on:
       - main
 
 jobs:
-  build-push-run:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
 
-    - name: Log in to Amazon ECR
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Clone external repository
-      run: git clone https://github.com/keerthana257/index.git external-repo
-
-    - name: Verify Dockerfile presence
-      run: |
-        if [ ! -f external-repo/Dockerfile ]; then
-          echo "Dockerfile not found in external-repo directory"
-          exit 1
-        else
-          echo "Dockerfile found"
-        fi
-
-    - name: Verify index.html presence
-      run: |
-        if [ ! -f external-repo/index.html ]; then
-          echo "index.html not found in external-repo directory"
-          exit 1
-        else
-          echo "index.html found"
-        fi
-
-    - name: Build the Docker image
-      run: |
-        cd external-repo
-        docker build -t custom-nginx .
+    - name: Build and push Docker image
       env:
-        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    - name: Tag the Docker image
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ github.sha }}
       run: |
-        IMAGE_TAG=latest
-        ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
-        docker tag custom-nginx:$IMAGE_TAG $ECR_URI:$IMAGE_TAG
+        # Build the Docker image
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        
+        # Push the Docker image to ECR
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Push the Docker image to ECR
+    - name: Logout from Amazon ECR
       run: |
-        IMAGE_TAG=latest
-        ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
-        docker push $ECR_URI:$IMAGE_TAG
-
-    - name: Run Docker container
-      run: |
-        ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
-        IMAGE_TAG=latest
-        docker run -d -p 80:80 $ECR_URI:$IMAGE_TAG
+        docker logout ${{ secrets.ECR_REGISTRY }}
