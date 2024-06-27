@@ -28,11 +28,17 @@ jobs:
       run: git clone https://github.com/keerthana257/index.git external-repo
 
     - name: Check the files in the cloned repository
-      run: ls external-repo
+      run: |
+        echo "Checking contents of external-repo directory"
+        ls -la external-repo
+        echo "Checking contents of root directory"
+        ls -la
 
     - name: Build the Docker image
       run: |
         cd external-repo
+        echo "Checking contents of external-repo directory before build"
+        ls -la
         docker build -t custom-nginx .
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
