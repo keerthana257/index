@@ -27,6 +27,9 @@ jobs:
     - name: Clone external repository
       run: git clone https://github.com/keerthana257/index.git external-repo
 
+    - name: List files in external repository
+      run: ls external-repo
+
     - name: Build the Docker image
       run: |
         cd external-repo
@@ -54,3 +57,4 @@ jobs:
         ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         IMAGE_TAG=latest
         docker run -d -p 80:80 $ECR_URI:$IMAGE_TAG
+
