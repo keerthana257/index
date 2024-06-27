@@ -27,13 +27,6 @@ jobs:
     - name: Clone external repository
       run: git clone https://github.com/keerthana257/index.git external-repo
 
-    - name: Check the files in the cloned repository
-      run: |
-        echo "Checking contents of external-repo directory"
-        ls -la external-repo
-        echo "Checking contents of root directory"
-        ls -la
-
     - name: Verify Dockerfile presence
       run: |
         if [ ! -f external-repo/Dockerfile ]; then
@@ -43,11 +36,18 @@ jobs:
           echo "Dockerfile found"
         fi
 
+    - name: Verify index.html presence
+      run: |
+        if [ ! -f external-repo/index.html ]; then
+          echo "index.html not found in external-repo directory"
+          exit 1
+        else
+          echo "index.html found"
+        fi
+
     - name: Build the Docker image
       run: |
         cd external-repo
-        echo "Checking contents of external-repo directory before build"
-        ls -la
         docker build -t custom-nginx .
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
